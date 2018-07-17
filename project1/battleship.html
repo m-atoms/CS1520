@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+	<title>BATTLESHIP</title>
+	<h1>Battleship</h1>
+	<link rel="stylesheet" type="text/css" href="battleship.css">
+	<script type="text/javascript">
+		/* CREATE PLAYER OBJECT */
+		function Player(num, turn) {
+			this.name = get_name(num);
+			this.locations = get_locations(this.name);
+			this.target = [[],[],[],[],[],[],[],[],[],[]]; //lame
+			this.ships = get_ships(this.locations);
+			this.turn = turn;
+			this.score;
+			this.win = false;
+			this.health = [0,0,0]; //hits on [AC, B, S]
+			this.a = true; //true while alive
+			this.b = true;
+			this.s = true;
+
+			// initialize target to 0s and ship to space
+			for (var i = 0; i < 10; i++) {	
+				for (var j = 0; j < 10; j++) {
+					this.target[i][j] = 0;
+				}
+			}
+		}
+
+		/* PROMPT USER FOR NAME */
+		function get_name(num) {
+			return name = prompt("Player " + num + " name: ");
+		}
+
+		/* PROMPT AND PARSE USER INPUT FOR SHIP LOCATION */
+		function get_locations(name) {
+			var locations = prompt(name + ", enter your ship locations: ");
+							//"A:A1-A5;B:B6-E6;S:H3-J3"; //EXAMPLE1
+							//"A(A1-A5); B(B6-E6); S(H3-J3);"; //EXAMPLE2
+							//"B(B6-E6);S(H3-J3;A(A1-A5)"; //EXAMPLE3
+
+			// ships[0]=AC, ships[1]=B, ships[2]=S
+			var ships = new Array(3);
+			ships[0] = locations.match(new RegExp('A[:(][A-J]\\d*-[A-J]\\d*'));
+			ships[1] = locations.match(new RegExp('B[:(][A-J]\\d*-[A-J]\\d*'));
+			ships[2] = locations.match(new RegExp('S[:(][A-J]\\d*-[A-J]\\d*'));
+			
+
+			ships[0] = ships[0][0].match(new RegExp('[A-J]\\d+',"g"));
+			ships[1] = ships[1][0].match(new RegExp('[A-J]\\d+',"g"));
+			ships[2] = ships[2][0].match(new RegExp('[A-J]\\d+',"g"));
+
+			for (var i = 0; i < 3; i++) {
+				var t0 = ships[i][0].match(new RegExp('[A-J]'));
+				var t1 = ships[i][0].match(new RegExp('\\d+'));
+				var t2 = ships[i][1].match(new RegExp('[A-J]'));
+				var t3 = ships[i][1].match(new RegExp('\\d+'));
+				ships[i] = [t0[0], t1[0], t2[0], t3[0]];
+				//console.log(ships[i]);
+
+				
+				ships[i][0] = toInd(ships[i][0]);
+				ships[i][1] = parseInt(ships[i][1]) - 1;
+				ships[i][2] = toInd(ships[i][2]);
+				ships[i][3] = parseInt(ships[i][3]) - 1;
+
+				if (ships[i][0] > ships[i][2]) {
+					var t = ships[i][0];
+					ships[i][0] = ships[i][2];
+					ships[i][2] = t;
+				}
+
+				if (ships[i][1] > ships[i][3]) {
+					var t = ships[i][1];
+					ships[i][1] = ships[i][3];
+					ships[i][3] = t;
+				}
+				//console.log(ships[i]);
+			}
+			return ships;
+		}
+
+		/* CONVERT CELL ID LETTER TO INDEX */
+		function toInd(letter) {
+			switch (letter) {
+				case "A":
+					return 0;
+					break;
+				case "B":
+					return 1;
+					break;
+				case "C":
+					return 2;
+					break;
+				case "D":
+					return 3;
+					break;
+				case "E":
+					return 4;
+					break;
+				case "F":
+					return 5;
+					break;
+				case "G":
+					return 6;
+					break;
+				case "H":
+					return 7;
+					break;
+				case "I":
+					return 8;
+					break;
+				case "J":
+					return 9;
+					break;
+			}
+		}
+
+		/* CREATE 2D ARRAY CONTAINING PLAYER SHIP LOCATIONS */
+		function get_ships(loc) {
+			// initialize ships array
+			var ships = [[],[],[],[],[],[],[],[],[],[]];
+			for (var i = 0; i < 10; i++) {	
+				for (var j = 0; j < 10; j++) {
+					ships[i][j] = " ";
+				}
+			}
+			// add AC position to ships
+			for (var i = loc[0][0]; i < (loc[0][2]+1); i++) {
+				ships[i][loc[0][1]] = "A";
+			}
+			for (var j = loc[0][1]; j < (loc[0][3]+1); j++) {
+					ships[loc[0][0]][j] = "A";
+				}
+			// add B position to ships
+			for (var i = loc[1][0]; i < (loc[1][2]+1); i++) {
+				ships[i][loc[1][1]] = "B";
+			}
+			for (var j = loc[1][1]; j < (loc[1][3]+1); j++) {
+					ships[loc[1][0]][j] = "B";
+				}
+			// add S position to ships
+			for (var i = loc[2][0]; i < (loc[2][2]+1); i++) {
+				ships[i][loc[2][1]] = "S";
+			}
+			for (var j = loc[2][1]; j < (loc[2][3]+1); j++) {
+					ships[loc[2][0]][j] = "S";
+				}
+			return ships;
+
+		}
+
+		/* CREATE HTML TABLES */
+		function generate_tables(p1, p2) {
+			// define table labels
+			var cols = ['','A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
+			var rows = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+
+			// get the reference for the body
+			var body = document.getElementsByTagName("body")[0];
+			var title = document.createTextNode("Targets");
+			body.appendChild(title);
+			// creates a <table> element and a <tbody> element
+  			var tbl = document.createElement("table");
+  			tbl.setAttribute("id", "targetTable");
+  			//tbl.setAttribute("id", "p1_target")
+  			var tblBody = document.createElement("tbody");
+
+  			// creates all table cells 
+			for (var i = 0; i < rows.length; i++) {
+				// creates table row
+				var row = document.createElement("tr");
+				row.setAttribute("id", rows[i]);
+
+				// creates <td> element
+				// adds unique ID to each element
+				// adds eventListener for click to each	
+				for (var j = 0; j < cols.length; j++) {
+					var cell = document.createElement("td");
+					cell.setAttribute("id", cols[j]+rows[i]);
+					if (i == 0 && j == 0) {
+						var cellText = document.createTextNode(" ");
+					}
+					else if (i == 0 && j > 0) {
+						var cellText = document.createTextNode(cols[j]);
+						cell.className = 'label';
+					}
+					else if (j == 0 && i > 0) {
+						var cellText = document.createTextNode(rows[i]);
+						cell.className = 'label';
+					}
+					else {
+						var cellText = document.createTextNode(" ");
+						cell.addEventListener("click", function() { onClick(p1, p2, this.id); });
+					}
+
+					cell.appendChild(cellText);
+					row.appendChild(cell);
+
+					// add the row to the end of the table body
+					tblBody.appendChild(row);
+				}
+			}
+			// append <tblBody> to table and append <table> to <body>
+			tbl.appendChild(tblBody);
+			body.appendChild(tbl);
+			
+			/* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
+			// create title for ships table
+			var title = document.createTextNode("Ship Locations");
+			body.appendChild(title);
+
+			// creates a <table> element and a <tbody> element
+  			var tbl = document.createElement("table");
+  			tbl.setAttribute("id", "shipTable");
+  			var tblBody = document.createElement("tbody");
+
+  			// creates all table cells 
+			for (var i = 0; i < rows.length; i++) {
+				// creates table row
+				var row = document.createElement("tr");
+				row.setAttribute("id", rows[i]);
+			
+				// creates <td> element
+				// adds unique ID to each element
+				// adds eventListener for click to each	
+				for (var j = 0; j < cols.length; j++) {
+					var cell = document.createElement("td");
+					cell.setAttribute("id", cols[j]+"_"+rows[i]);
+					if (i == 0 && j == 0) {
+						var cellText = document.createTextNode(" ");
+					}
+					else if (i == 0 && j > 0) {
+						var cellText = document.createTextNode(cols[j]);
+						cell.className = 'label';
+					}
+					else if (j == 0 && i > 0) {
+						var cellText = document.createTextNode(rows[i]);
+						cell.className = 'label';
+					}
+					else {
+						var cellText = document.createTextNode(" ");
+					}
+
+					cell.appendChild(cellText);
+					row.appendChild(cell);
+
+					// add the row to the end of the table body
+					tblBody.appendChild(row);
+				}
+			}
+			// append <tblBody> to table and append <table> to <body>
+			tbl.appendChild(tblBody);
+			body.appendChild(tbl);
+		}
+
+		/* LISTEN FOR CELL CLICK AND HANDLE GAME PLAY */
+		function onClick(p1, p2, id) {
+			// default arrays for blanking
+			var def_t = [[],[],[],[],[],[],[],[],[],[]];
+			var def_s = [[],[],[],[],[],[],[],[],[],[]];
+			for (var i = 0; i < 10; i++) {	
+				for (var j = 0; j < 10; j++) {
+					def_t[i][j] = 0;
+					def_s[i][j] = " ";
+				}
+			}
+
+			//console.log(id + " was clicked");
+			// get indices
+			var t0 = id.match(new RegExp('[A-J]'));
+			var t1 = id.match(new RegExp('\\d+'));
+			var ind = [toInd(t0[0]), (parseInt(t1[0]) - 1)];
+			// make sure p1 is taking turn
+			if (p2.turn) {
+				var t = p1;
+				p1 = p2;
+				p2 = t;
+			}
+			// check if hit
+			var check = p2.ships[ind[0]][ind[1]];
+			var hit = false;
+			if (check == "A") {
+				p2.health[0]++;
+				//console.log("AC hits: " + p2.health[0]);
+				hit = true;
+			}
+			else if (check == "B") {
+				p2.health[1]++;
+				//console.log("B hits: " + p2.health[1]);
+				hit = true;
+			}
+			else if (check == "S") {
+				p2.health[2]++;
+				//console.log("S hits: " + p2.health[2]);
+				hit = true;
+			}
+			// handle hit or miss
+			if (hit) {
+				if (p2.health[0] == 5 && p2.a) {
+					alert("HIT @ " + id + ", sunk Aircraft Carrier!");
+					p2.a = false; //prevent this print statement from happening every following turn
+				}
+				else if (p2.health[1] == 4 && p2.b) {
+					alert("HIT @ " + id + ", sunk Battleship!");
+					p2.b = false;
+				}
+				else if (p2.health[2] == 3 && p2.s) {
+					alert("HIT @ " + id + ", sunk Submarine!");
+					p2.s = false;
+				}
+				else {
+					alert("HIT @ " + id);
+				}
+				
+				p1.target[ind[0]][ind[1]] = 1;
+			}
+			else {
+				alert("MISS @ " + id);
+				p1.target[ind[0]][ind[1]] = 2;
+			}
+
+			if (p2.health[0] == 5 && p2.health[1] == 4 && p2.health[2] == 3) {
+				//alert(p1.name + " wins!");
+				end_game(p1);
+			}
+			// switch turns
+			p1.turn = false;
+			p2.turn = true;
+
+			alert("Click OK to begin " + p2.name + "'s turn");
+
+			grid_display(def_t, def_s, def_s); //blank
+
+			grid_display(p2.target, p1.target, p2.ships); //load next player data			
+		}
+
+		/* HANDLE WINNER AND UPDATE LEADERBOARD */
+		function end_game(p1) {
+			var score = 24 - 2*(p1.health[0]+p1.health[1]+p1.health[2]);
+			alert(p1.name + " wins!\nScore: " + score);
+			// update localStorage
+			if (localStorage.length <= 10) {
+				if (localStorage.length < 10) { //if not full, add winner score
+					localStorage.setItem(score, p1.name);
+					console.log("in here");
+				}
+				else if (localStorage.length == 10 && (localStorage.key(0) < score)) { //n=10, new hs
+					localStorage.removeItem(localStorage.key(0));
+					localStorage.setItem(score, p1.name);
+					console.log("in there");
+				}	
+			}
+			// show leaderboard
+			var ls = [[],[]];
+			for (var i = 0; i < localStorage.length; i++) {
+				ls[0][i] = localStorage.key(i);
+				ls[1][i] = localStorage.getItem(localStorage.key(i));
+			}
+
+			var message = "LEADERBOARD: \n";
+			for (var j = [localStorage.length - 1]; j >= 0; j--) {
+				console.log(j);
+				var temp = ls[1][j] + ": " + ls[0][j] + "\n";
+				message = message + temp;
+			}
+
+			alert(message);
+			exit();
+		}
+
+		/* USE 2D ARRAYS TO SET GRID CONTENTS */
+		function grid_display(target2, target1, ships) {
+			var table = document.getElementById("targetTable");
+			for (var i = 1, row; row = table.rows[i]; i++) {
+				for (var j = 1, col; col = row.cells[j]; j++) {
+					if (target2[j-1][i-1] == 0) {
+						table.rows[i].cells[j].style.backgroundColor = "cyan";
+					}
+					else if (target2[j-1][i-1] == 1) {
+						table.rows[i].cells[j].style.backgroundColor = "red";
+					}
+					else if (target2[j-1][i-1] == 2) {
+						table.rows[i].cells[j].style.backgroundColor = "white";
+					}
+					//console.log(table.rows[i].cells[j].childNodes[0].textContent);
+				}
+			}
+			var table = document.getElementById("shipTable");
+			for (var i = 1, row; row = table.rows[i]; i++) {
+				for (var j = 1, col; col = row.cells[j]; j++) {
+					table.rows[i].cells[j].childNodes[0].textContent = ships[j-1][i-1];
+					if (target1[j-1][i-1] == 0) {
+						table.rows[i].cells[j].style.backgroundColor = "cyan";
+					}
+					else if (target1[j-1][i-1] == 1) {
+						table.rows[i].cells[j].style.backgroundColor = "red";
+					}
+					else if (target1[j-1][i-1] == 2) {
+						table.rows[i].cells[j].style.backgroundColor = "white";
+					}
+					//console.log(table.rows[i].cells[j].childNodes[0].textContent);
+				}
+			}
+			return true;
+		}
+
+	</script>
+</head>
+<body>
+	<script type="text/javascript">
+		//create two players
+		console.log("foofoo".match(/(.*)\1/));
+		console.log("foobar".match(/(.*)\1/));
+		console.log("barbaz".match(/(.*)\1/));
+		var p1 = new Player(1, true);
+		var p2 = new Player(2, false);
+		alert("Click to begin " + p1.name + "'s turn");
+		// create html tables
+		generate_tables(p1, p2);
+		// load tables with player 1 data
+		grid_display(p1.target, p2.target, p1.ships);
+	</script>
+</body>
+</html>
