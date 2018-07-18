@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}Profile{% endblock %}
+
+{% block body %}
+	{% if g.user.user_type == 'owner' %}
+		<h2>Scheduled Events</h2>
+		<ul class="twitbox">
+		{% for event in events %}
+			<li><p>Event Name: {{ event.name }} | Event Date: {{ event.date }}</p></li>
+			{% if event.staff1 == '_' and event.staff2 == '_' and event.staff3 == '_' %}
+				<li><em>No staff currently scheduled.</em></li>
+			{% else %}
+				<li><p>Staff: {{ event.staff1 }}</p></li>
+				<li><p>Staff: {{ event.staff2 }}</p></li>
+				<li><p>Staff: {{ event.staff3 }}</p></li>
+			{% endif %}
+		{% else %}
+			<li><em>No events currently scheduled.</em></li>
+		{% endfor %}
+		</ul>
+	{% elif g.user.user_type == 'staff' %}
+		<h2>Scheduled Events</h2>
+		<ul class="twitbox">
+		{% for event in events %}
+			<li><p>Event Name: {{ event.name }} | Event Date: {{ event.date }}</p></li>
+		{% else %}
+			<li><em>No events currently scheduled.</em></li>
+		{% endfor %}
+		</ul>
+		<h2>Available Events</h2>
+		<ul class="twitbox">
+		{% for open in openings %}
+			{% if open.staff1 == '_' or open.staff2 == '_' or open.staff3 == '_' %}
+				{% if open.staff1 != g.user.username and open.staff2 != g.user.username and open.staff3 != g.user.username %}
+					<li><p>Event Name: {{ open.name }} | Event Date: {{ open.date }}</p></li>
+						{% if open.staff1 == '_' %}
+							<form action="{{ url_for('sign_up1') }}" method="post">
+								<input type="hidden" name="staff1" value="{{ g.user.username }}">
+								<input type="hidden" name="event_id" value="{{ open.event_id }}">
+								<div class="actions"><input type="submit" value="Sign Up"></div></form>
+						{% elif open.staff2 == '_' %}
+							<form action="{{ url_for('sign_up2') }}" method="post">
+								<input type="hidden" name="staff2" value="{{ g.user.username }}">
+								<input type="hidden" name="event_id" value="{{ open.event_id }}">
+								<div class="actions"><input type="submit" value="Sign Up"></div></form>
+						{% else %}
+							<form action="{{ url_for('sign_up3') }}" method="post">
+								<input type="hidden" name="staff3" value="{{ g.user.username }}">
+								<input type="hidden" name="event_id" value="{{ open.event_id }}">
+								<div class="actions"><input type="submit" value="Sign Up"></div></form>
+						{% endif %}
+				
+				{% endif %}
+			{% endif %}
+		{% endfor %}
+		</ul>
+
+	{% elif g.user.user_type == 'customer' %}
+		<h2>Schedule an Event</h2>
+		<div class="twitbox">
+			<form action="{{ url_for('add_event') }}" method="post">
+				<input type="hidden" name="customer_id" value="{{ g.user.user_id }}">
+				<dl>
+					<dt>Event Name:
+      				<dd><input type="text" name="name" size="30">
+      				<dt>Event Date:
+      				<dd><input type="date" name="date"></p>
+      			</dl>
+      			<div class="actions"><input type="submit" value="Create"></div>
+			</form>
+		</div>
+		<h2>Scheduled Events</h2>
+		<ul class="twitbox">
+		{% for event in events %}
+			<li><p>Event Name: {{ event.name }} | Event Date: {{ event.date }} | Event ID: {{ event.event_id }} 
+				<form action="{{ url_for('delete_event') }}" method="post">
+					<input type="hidden" name="event_id" value="{{ event.event_id }}">
+					<div class="actions"><input type="submit" value="Cancel"></div></form>
+			</p></li>
+		{% else %}
+			<li><em>No events currently scheduled.</em></li>
+		{% endfor %}
+		</ul>
+	{% endif %}  
+{% endblock %}
