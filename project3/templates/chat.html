@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block body %}
+	<h2>{{ chatroom.chat_name }}</h2>
+	<ul id="msgs" class="messages">
+		{% for message in messages %}
+			<li><p><strong>{{ message.author }}: </a></strong>{{ message.text }}<small> - {{ message.pub_date|datetimeformat }}</small>
+	{% else %}
+		<li><em>There's no messages so far.</em>
+	{% endfor %}
+	</ul>
+
+	<div class="twitbox">
+		<h3>What's on your mind {{ g.user.username }}?</h3>
+		<form>
+			<input type="hidden" id="author" value="{{ g.user.username }}">
+			<input type="hidden" id="chat_name" value="{{ chatroom.chat_name }}">
+			<input type="text" id="text" size="60">
+			<input id="btn" type="button" value="Share">
+		</form>
+	</div>
+
+
+{% endblock %}
+
+
+{% block js %}
+	<script type="text/javascript" src="{{ url_for('static', filename='ajax.js') }}"></script>
+
+	<script type="text/javascript">
+		//what arguments should be passed?
+		//window.setTimeout(function() { makePoll() }, 1000);
+	</script>
+{% endblock %}

@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block body %}
+{% if g.user %}
+	<h2>Chatroom List</h2>
+	<ul class="twitbox">
+	{% if not rooms %}
+		<li><em>No chatrooms currently available.</em></li>
+	{% else %}
+		{% for room in rooms %}
+			{% if g.user.user_id == room.creator_id %}
+				<li>
+					<a href= "{{ url_for('chat', chatroom_id=room.chatroom_id) }}">{{ room.chat_name }}</a>
+				</li>
+				<div class="twitbox">
+				<form action="{{ url_for('delete') }}" method="post">
+					<input type="hidden" name="chatroom_id" value="{{ room.chatroom_id }}">
+      			<div class="actions"><input type="submit" value="delete"></div>
+				</form>
+		</div>
+			{% else %}
+				<li><a href= "{{ url_for('chat', chatroom_id=room.chatroom_id) }}">{{ room.chat_name }}</a>
+				</li>
+			{% endif %}
+		{% endfor %}
+	{% endif %}
+	</ul>
+	<h2>Create Chatroom</h2>
+		<div class="twitbox">
+			<form action="{{ url_for('create_room') }}" method="post">
+				<input type="hidden" name="creator_id" value="{{ g.user.user_id }}">
+				<dl>
+					<dt>Chatroom Name:
+      				<dd><input type="text" name="chat_name" size="30">
+      			</dl>
+      			<div class="actions"><input type="submit" value="Create"></div>
+			</form>
+		</div>
+{% else %}
+	<h2>Welcome to Chatland</h2>
+{% endif %}
+{% endblock %}
