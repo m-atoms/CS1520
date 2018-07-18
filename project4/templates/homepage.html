@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>RESTful Budget Application</title>
+		<script type="text/javascript" src="{{ url_for('static', filename='script.js') }}"></script>
+	</head>
+	<body>
+		<h3>Add new category:</h3>
+		<form name="theForm">
+			<dl>
+				<dt>Name:
+				<dt><input type="text" id="newCat" name="" value="" >
+				<dt>Budget:
+				<dt><input type="type" id="budget" name="" value="">
+				<dt><input type="button" id="theButton" value="Add">
+		</form>
+		
+		<h3>Budget Summary:</h3>
+		<table id="theTable">
+		</table>
+
+		<h5 id="spent">Misc Spent:</h5>
+
+		<h3>Add new purchase:</h3>
+		<form name="purchaseForm">
+			<dl>
+				<dt>Name:
+				<dt><input type="text" id="newPurchase" name="" value="" >
+				<dt>Amount:
+				<dt><input type="type" id="amount" name="" value="">
+				<dt>Category:
+				<dt><input type="type" id="cat" name="" value="">
+				<dt>Date:
+				<dt><input type="date" id="date" name="" value="">
+				<dt><input type="button" id="purchaseButton" value="Add">
+		</form>
+
+		<h3>Purchase List:</h3>
+		<table id="purchaseTable">
+		</table>
+	</body>
+</html>
+
